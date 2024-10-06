@@ -1,18 +1,18 @@
-# 使用带有 Java JDK 的基础镜像
+# 基于带有 Java JDK 的基础镜像
 FROM openjdk:11-jdk-slim
 
 # 设置环境变量
 ENV ANDROID_HOME=/opt/android-sdk
 ENV PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin
 
-# 安装必需的依赖
+# 安装必要依赖
 RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     curl \
     lib32z1 \
-    lib32stdc++6 \
     lib32ncurses6 \
+    lib32stdc++6 \
     && apt-get clean
 
 # 下载 Android SDK 命令行工具
@@ -26,26 +26,26 @@ RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
 ENV JAVA_HOME=/usr/local/openjdk-11
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-# 手动接受 Android SDK 许可证和安装 SDK 组件
+# 安装 Android SDK 组件并接受所有许可
 RUN mkdir -p ~/.android/ \
     && touch ~/.android/repositories.cfg \
-    && yes | sdkmanager --licenses \
-    && sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+    && yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses \
+    && ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3"
 
 # 安装 Cordova
 RUN npm install -g cordova
 
-# 设置工作目录
+# 创建工作目录
 WORKDIR /app
 
 # 复制项目文件
 COPY . /app
 
-# 安装 Python 依赖项
+# 安装 Python 依赖
 RUN pip3 install -r requirements.txt
 
 # 暴露端口
 EXPOSE 10000
 
-# 启动应用程序
+# 启动应用
 CMD ["python3", "app.py"]
