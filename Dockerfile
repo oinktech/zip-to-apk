@@ -1,38 +1,41 @@
-# 使用 Python 官方基础镜像
-FROM python:3.9-slim
+# 使用官方的 Ubuntu 基础镜像
+FROM ubuntu:20.04
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制 requirements.txt 文件
-COPY requirements.txt .
-
-# 安装 Python 依赖
-RUN pip install --no-cache-dir -r requirements.txt
-
-# 安装必要的系统依赖
+# 安装必要的工具和依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
     curl \
     openjdk-11-jdk \
     wget \
+    build-essential \
+    zip \
+    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装 Node.js
+# 安装 Node.js 和 Cordova
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g cordova && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# 复制 requirements.txt 文件并安装 Python 依赖
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
 # 复制应用程序代码
 COPY . .
 
-# 设定环境变量
+# 设置环境变量
 ENV FLASK_ENV=production
 
 # 暴露 Flask 默认端口
 EXPOSE 10000
 
 # 启动 Flask 应用
-CMD ["python", "app.py"]
+CMD ["python3", "app.py"]
