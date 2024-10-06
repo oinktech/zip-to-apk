@@ -1,50 +1,43 @@
-# 基础镜像，带有Java JDK和Android SDK
+# 使用带有JDK的基础镜像
 FROM openjdk:11-jdk-slim
 
 # 设置环境变量
 ENV ANDROID_SDK_ROOT=/usr/local/android-sdk
-ENV PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/tools/bin
-ENV ANDROID_HOME=$ANDROID_SDK_ROOT
+ENV PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
 
-# 安装依赖库
+# 安装必要依赖
 RUN apt-get update && apt-get install -y \
-    curl \
+    wget \
     unzip \
     zip \
-    wget \
-    build-essential \
+    curl \
     lib32z1 \
     lib32ncurses6 \
     lib32stdc++6 \
-    python3 \
-    python3-pip \
-    git \
+    build-essential \
     && apt-get clean
 
-# 下载并安装Android SDK
+# 下载并安装 Android SDK 的命令行工具
 RUN mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools" \
     && cd "$ANDROID_SDK_ROOT/cmdline-tools" \
     && wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O tools.zip \
-    && unzip tools.zip -d tools \
+    && unzip tools.zip -d latest \
     && rm tools.zip
 
-# 接受所有SDK许可证
-RUN yes | sdkmanager --licenses
-
-# 安装需要的Android SDK组件
-RUN sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --install \
+# 接受 SDK 许可证并安装 Android SDK 组件
+RUN yes | sdkmanager --licenses \
+    && sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --install \
     "platform-tools" \
     "platforms;android-30" \
-    "build-tools;30.0.3" \
-    "cmdline-tools;latest" \
-    "extras;android;m2repository" \
-    "extras;google;m2repository"
+    "build-tools;30.0.3"
 
 # 安装 Cordova
 RUN npm install -g cordova
 
-# 创建 Flask app 目录并拷贝当前目录内容
+# 设置工作目录
 WORKDIR /app
+
+# 复制当前目录到工作目录
 COPY . /app
 
 # 安装 Python 依赖
