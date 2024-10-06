@@ -34,8 +34,8 @@ RUN cordova telemetry off
 # 創建應用工作目錄
 WORKDIR /app
 
-# 端口和服務設置
-EXPOSE 10000
+
+
 
 # 默認命令
 CMD ["bash"]
