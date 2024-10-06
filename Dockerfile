@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 安装 Android SDK 命令行工具
 RUN mkdir -p /opt/android-sdk && \
     cd /opt/android-sdk && \
-    wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip && \
+    curl -LO https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip && \
     unzip commandlinetools-linux-6609375_latest.zip && \
     rm commandlinetools-linux-6609375_latest.zip && \
     mkdir -p cmdline-tools/latest && \
