@@ -73,4 +73,5 @@ def download_apk(filename):
     return send_file(os.path.join(APK_FOLDER, filename), as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000,debug=True)
+    port = int(os.getenv('PORT', 10000))  # 使用 Render 提供的端口
+    app.run(host='0.0.0.0', port=port,debug=True)
