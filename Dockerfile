@@ -12,10 +12,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-11-jdk \
     wget \
     build-essential \
-    zip \
     unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# 安装 Android SDK
+RUN mkdir -p /opt/android-sdk && \
+    cd /opt/android-sdk && \
+    wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip && \
+    unzip commandlinetools-linux-6609375_latest.zip && \
+    rm commandlinetools-linux-6609375_latest.zip && \
+    mkdir -p cmdline-tools/latest && \
+    mv cmdline-tools/* cmdline-tools/latest/
+
+# 设置环境变量
+ENV ANDROID_SDK_ROOT=/opt/android-sdk
+ENV PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+ENV PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+ENV PATH=$PATH:$ANDROID_SDK_ROOT/tools/bin
 
 # 安装 Node.js 和 Cordova
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
@@ -31,8 +45,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # 复制应用程序代码
 COPY . .
 
-# 设置环境变量
-ENV FLASK_ENV=production
+# 设置 Android SDK 和 Java 环境变量
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 # 暴露 Flask 默认端口
 EXPOSE 10000
