@@ -20,19 +20,19 @@ def upload_file():
 
     zip_file = request.files['zipfile']
     
-    # 验证文件类型
+    # 驗證文件類型
     if not zip_file.filename.endswith('.zip'):
-        return jsonify({'error': '只允许上传 .zip 文件'}), 400
+        return jsonify({'error': '僅允許上傳 .zip 文件'}), 400
     
-    # 验证文件大小
-    max_size = 50 * 1024 * 1024  # 50MB
+    # 驗證文件大小
+    max_size = 50 * 1024 * 1024  # 10MB
     if zip_file.content_length > max_size:
-        return jsonify({'error': '文件大小超过限制（最大 50MB）'}), 400
+        return jsonify({'error': '文件大小超過限制（最大 50MB）'}), 400
 
     zip_path = os.path.join(UPLOAD_FOLDER, zip_file.filename)
     zip_file.save(zip_path)
 
-    # 解压缩 ZIP 文件
+    # 解壓縮 ZIP 文件
     extract_folder = os.path.join(UPLOAD_FOLDER, zip_file.filename[:-4])
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(extract_folder)
@@ -42,11 +42,11 @@ def upload_file():
     apk_path = os.path.join(APK_FOLDER, apk_name)
 
     try:
-        # 进入解压文件夹并初始化 Cordova 项目
+        # 進入解壓文件夾並初始化 Cordova 項目
         subprocess.run(['cordova', 'create', 'cordova_app', 'com.example.app', 'MyApp'], check=True, cwd=extract_folder)
         subprocess.run(['cordova', 'platform', 'add', 'android'], check=True, cwd=os.path.join(extract_folder, 'cordova_app'))
         
-        # 将用户上传的文件拷贝到 Cordova 的 www 文件夹中
+        # 將用戶上傳的文件拷貝到 Cordova 的 www 文件夾中
         www_folder = os.path.join(extract_folder, 'cordova_app', 'www')
         for item in os.listdir(extract_folder):
             if item != 'cordova_app' and item != zip_file.filename:
@@ -56,7 +56,7 @@ def upload_file():
                 else:
                     subprocess.run(['cp', item_path, www_folder], check=True)
 
-        # 构建 APK
+        # 構建 APK
         subprocess.run(['cordova', 'build', 'android', '--release'], check=True, cwd=os.path.join(extract_folder, 'cordova_app'))
 
         # 查找生成的 APK 文件
@@ -64,7 +64,7 @@ def upload_file():
         if os.path.exists(apk_path):
             return jsonify({'message': 'APK 生成成功', 'apk_url': f'/apks/{apk_name}'})
         else:
-            return jsonify({'error': 'APK 生成失败'}), 500
+            return jsonify({'error': 'APK 生成失敗'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
