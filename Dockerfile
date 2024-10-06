@@ -1,51 +1,41 @@
-# 基于带有 Java JDK 的基础镜像
-FROM openjdk:11-jdk-slim
+# 使用官方的 Cordova 映像作为基础
+FROM beevelop/cordova
 
-# 设置环境变量
-ENV ANDROID_HOME=/opt/android-sdk
-ENV PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:${ANDROID_HOME}/cmdline-tools/latest/bin
+# 設置必要的環境變量
+ENV ANDROID_SDK_ROOT /opt/android-sdk
+ENV PATH ${PATH}:${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${ANDROID_SDK_ROOT}/build-tools/30.0.3
 
-# 安装必要依赖
-RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
+# 安裝必要的依賴
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    lib32z1 \
-    lib32ncurses6 \
-    lib32stdc++6 \
+    unzip \
+    openjdk-11-jdk \
     && apt-get clean
 
-# 下载 Android SDK 命令行工具
-RUN mkdir -p ${ANDROID_HOME}/cmdline-tools \
-    && cd ${ANDROID_HOME}/cmdline-tools \
-    && wget https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip -O commandlinetools.zip \
-    && unzip commandlinetools.zip -d latest \
-    && rm commandlinetools.zip
+# 下載並安裝 Android SDK
+RUN mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip \
+    && unzip sdk-tools.zip -d ${ANDROID_SDK_ROOT}/cmdline-tools \
+    && rm sdk-tools.zip \
+    && mv ${ANDROID_SDK_ROOT}/cmdline-tools/cmdline-tools ${ANDROID_SDK_ROOT}/cmdline-tools/latest
 
-# 设置 JAVA_HOME 环境变量
-ENV JAVA_HOME=/usr/local/openjdk-11
-ENV PATH=$JAVA_HOME/bin:$PATH
+# 接受所有的 Android SDK 許可協議
+RUN yes | sdkmanager --licenses
 
-# 安装 Android SDK 组件并接受所有许可
-RUN mkdir -p ~/.android/ \
-    && touch ~/.android/repositories.cfg \
-    && yes | ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --licenses \
-    && ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+# 安裝平台工具和必要的 Android 构建工具
+RUN sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --install \
+    "platform-tools" \
+    "platforms;android-30" \
+    "build-tools;30.0.3"
 
-# 安装 Cordova
-RUN npm install -g cordova
+# 安裝其他必要的 Cordova 插件和工具
+RUN cordova telemetry off
 
-# 创建工作目录
+# 創建應用工作目錄
 WORKDIR /app
 
-# 复制项目文件
-COPY . /app
-
-# 安装 Python 依赖
-RUN pip3 install -r requirements.txt
-
-# 暴露端口
+# 端口和服務設置
 EXPOSE 10000
 
-# 启动应用
-CMD ["python3", "app.py"]
+# 默認命令
+CMD ["bash"]
