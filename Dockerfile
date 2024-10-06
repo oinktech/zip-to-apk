@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /opt/android-sdk && \
     cd /opt/android-sdk && \
     curl -LO https://dl.google.com/android/repository/commandlinetools-linux-103.0.0_latest.zip && \
-    ls -l && \  # 检查 ZIP 文件是否存在
     unzip commandlinetools-linux-103.0.0_latest.zip && \
     rm commandlinetools-linux-103.0.0_latest.zip && \
     mkdir -p cmdline-tools/latest && \
